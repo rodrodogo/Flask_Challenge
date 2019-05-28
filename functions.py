@@ -43,12 +43,21 @@ class dbConector:
 
     # Receive the SQL Query and execute to insert new information
     def insert(self, msg: str)-> None:
+        self.__doConection()
         self.__sql_gene.execute(msg)
         self.__conn.commit()
+        print("guarde en base de datos "+ msg)
+        self.__closeConection()
     # Receive the SQL Query and execute get information from DB
     def query(self, msg:str)->List:
+        self.__doConection()
         self.__sql_gene.execute(msg)
-        return self.__sql_gene.fetchall()
+        out = self.__sql_gene.fetchall()
+        self.__closeConection()
+        return out
+
+    def __closeConection(self):
+        self.__conn.close()
 
 
 
