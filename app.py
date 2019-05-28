@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 from functions import *
 import sqlite3
 
@@ -6,18 +6,8 @@ app =Flask(__name__)
 
 @app.route('/')
 def index():
-	pruebaSingleton()
-	return '''\
-	<form action="/insert" method="POST">
-  		First name:<br>
-  		<input type="text" name="firstname"><br>
-  		identification:<br>
-  		<input type="number" name="id">
-		Age:<br>
-		<input type="number" name="age">
-		<input type="submit" value="Submit">
-	</form>
-	 '''
+	return app.send_static_file("index.html")
+	#return Index.crt_person
 
 @app.route('/search/<name>')
 def search(name):

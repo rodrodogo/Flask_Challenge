@@ -9,7 +9,7 @@ import sqlite3  #DataBase
 class dbConector:
 
     __instance = None   # singleton reference
-    __conn = None   # connection with the DB
+    __conn = None       # connection with the DB
     __sql_gene = None   # cursor of the connection for do the queries
 
     @staticmethod
@@ -35,7 +35,6 @@ class dbConector:
                                         identification INTEGER PRIMARY KEY,\
                                         name varchar(255),  age int\
                                         )")
-
         else:
             self.__conn = sqlite3.connect('users.db')
             self.__conn.row_factory = sqlite3.Row
@@ -43,7 +42,7 @@ class dbConector:
 
 
     # Receive the SQL Query and execute to insert new information
-    def insert(self, msg: str)-> None: 
+    def insert(self, msg: str)-> None:
         self.__sql_gene.execute(msg)
         self.__conn.commit()
     # Receive the SQL Query and execute get information from DB
