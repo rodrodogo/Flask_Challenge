@@ -6,7 +6,31 @@ app =Flask(__name__)
 
 @app.route('/')
 def index():
+	return app.send_static_file("index.html")
+@app.route('/crt_group')
+def crt_group():
+	return app.send_static_file("crt_group.html")
+@app.route('/edt_group')
+def edt_group():
+	return app.send_static_file("edt_group.html")
+@app.route('/rmv_group')
+def rmv_group():
+	return app.send_static_file("rmv_group.html")
+@app.route('/vw_group')
+def vw_group():
+	return app.send_static_file("vw_group.html")
+@app.route('/crt_person')
+def crt_person():
 	return app.send_static_file("crt_person.html")
+@app.route('/edt_person')
+def edt_person():
+	return app.send_static_file("edt_person.html")
+@app.route('/rmv_person')
+def rmv_person():
+	return app.send_static_file("rmv_person.html")
+@app.route('/vw_person')
+def vw_person():
+	return app.send_static_file("vw_person.html")
 
 
 @app.route('/insert', methods = ['POST'])
@@ -16,11 +40,11 @@ def insert():
 	c = dbConector.getInstance()
 	try:
 		_name = request.form['firstname']
-		c.insert("INSERT INTO person VALUES  ({2} ,'{0}', {1})".format(_name,_age,_id))
+		c.insert("INSERT INTO person VALUES  ({2} ,'{0}', {1})".format(_name,_age,_id), "user")
 	except:
 		_name = request.form['firstnameM']
 		c.insert("UPDATE person SET name = '{0}', \
-				age = {1} WHERE identification = {2}".format(_name,_age,_id))
+				age = {1} WHERE identification = {2}".format(_name,_age,_id), "users")
 
 	return 'Hola {0}'.format(_name)
 
@@ -36,7 +60,7 @@ def vwPerson():
 			'''
 	_name = request.form['firstname']
 	c = dbConector.getInstance()
-	_result = c.query("SELECT * FROM person WHERE name = '{}'".format(_name))
+	_result = c.query("SELECT * FROM person WHERE name = '{}'".format(_name), "users")
 	for row in _result:
 		output += ''' <tr><th>{0}</th>
 					<th>{1}</th>
@@ -51,7 +75,7 @@ def vwPerson():
 def edtPerson():
 	_name = request.form['firstname']
 	c = dbConector.getInstance()
-	_result = c.query("SELECT * FROM person WHERE name = '{}'".format(_name))
+	_result = c.query("SELECT * FROM person WHERE name = '{}'".format(_name), "users")
 	output = '''
 				<form action="/insert", method="post">
 				  id:<br>
@@ -72,20 +96,71 @@ def edtPerson():
 def rmvPerson():
 	_id = request.form['id']
 	c = dbConector.getInstance()
-	c.insert("DELETE FROM person WHERE identification = {}".format(_id))
+	c.insert("DELETE FROM person WHERE identification = {}".format(_id), "users")
 	return "Eliminado"
 
+#------------------------------Groups-------------------------------------------
 
-@app.route('/insertTeams', methods = ['POST'])
-def insertTeams():
+@app.route('/insertGroup', methods = ['POST'])
+def insertGroup():
+
+	_id = request.form['id']
+	c = dbConector.getInstance()
 	try:
-		name = request.form['firstname']
-
+		_name = request.form['name']
+		c.insert("INSERT INTO groups VALUES  ({1} ,'{0}')".format(_name,_id), "groups")
 	except:
-		name = ""
+		_name = request.form['nameM']
+		c.insert("UPDATE groups SET name = '{0}'\
+				 WHERE id = {1}".format(_name,_id), "groups")
 
+	return 'Hola {0}'.format(_name)
 
-	return 'Hola {0}'.format(name)
+@app.route('/vwGroup', methods = ['POST'])
+def vwGroup():
+	output = '''
+				<table style="width:100%">
+				  <tr>
+				    <th>id</th>
+				    <th>name</th>
+				  </tr>
+			'''
+	_name = request.form['name']
+	c = dbConector.getInstance()
+	_result = c.query("SELECT * FROM groups WHERE name = '{}'".format(_name), "groups")
+	for row in _result:
+		output += ''' <tr><th>{0}</th>
+					<th>{1}</th>
+					</tr>
+				'''.format(row['id'],row['name'])
 
+	output += "</table>"
+	return output
+
+@app.route('/edtGroup', methods =['POST'])
+def edtGroup():
+	_name = request.form['name']
+	c = dbConector.getInstance()
+	_result = c.query("SELECT * FROM groups WHERE name = '{}'".format(_name), "groups")
+	output = '''
+				<form action="/insertGroup", method="post">
+				  id:<br>
+				  <input type="number" name="id"  value = "{0}"
+				  readonly="readonly">
+				  name:<br>
+				  <input type="text" name="nameM"  value = "{1}">
+				  <br>
+				  <br><br>
+				  <input type="submit" value="Submit">
+				</form>
+			'''.format(_result[0]['id'],_result[0]['name'])
+	return output
+
+@app.route('/rmvGroup', methods = ['POST'])
+def rmvGroup():
+	_id = request.form['id']
+	c = dbConector.getInstance()
+	c.insert("DELETE FROM groups WHERE id = {}".format(_id), "groups")
+	return "Eliminado"
 
 app.run(debug=True)

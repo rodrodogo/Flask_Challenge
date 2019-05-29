@@ -23,34 +23,47 @@ class dbConector:
             raise Exception("glitch in the matrix, talk to nio")
         else:
             dbConector.__instance = self
-            self.__doConection()
 
-    def __doConection(self): # Do the connection with DB users in the same directory
+    def __doConection(self, to: str): # Do the connection with DB users in the same directory
+        if to == "user":
 
-        if not isfile('users.db'): # If is the first time, it will create the DB
+            if not isfile('users.db'): # If is the first time, it will create the DB
+                    self.__conn = sqlite3.connect('users.db')
+                    self.__conn.row_factory = sqlite3.Row # Change the format of the result row
+                    self.__sql_gene = self.__conn.cursor()
+                    self.__sql_gene.execute("CREATE TABLE person (\
+                                            identification INTEGER PRIMARY KEY,\
+                                            name varchar(255),  age int\
+                                            )")
+            else:
                 self.__conn = sqlite3.connect('users.db')
-                self.__conn.row_factory = sqlite3.Row # Change the format of the result row
+                self.__conn.row_factory = sqlite3.Row
                 self.__sql_gene = self.__conn.cursor()
-                self.__sql_gene.execute("CREATE TABLE person (\
-                                        identification INTEGER PRIMARY KEY,\
-                                        name varchar(255),  age int\
-                                        )")
-        else:
-            self.__conn = sqlite3.connect('users.db')
-            self.__conn.row_factory = sqlite3.Row
-            self.__sql_gene = self.__conn.cursor()
 
+        else:
+
+            if not isfile('teams.db'): # If is the first time, it will create the DB
+                    self.__conn = sqlite3.connect('teams.db')
+                    self.__conn.row_factory = sqlite3.Row # Change the format of the result row
+                    self.__sql_gene = self.__conn.cursor()
+                    self.__sql_gene.execute("CREATE TABLE groups (\
+                                            id INTEGER PRIMARY KEY,\
+                                            name varchar(255)\
+                                            )")
+            else:
+                self.__conn = sqlite3.connect('teams.db')
+                self.__conn.row_factory = sqlite3.Row
+                self.__sql_gene = self.__conn.cursor()
 
     # Receive the SQL Query and execute to insert new information
-    def insert(self, msg: str)-> None:
-        self.__doConection()
+    def insert(self, msg: str, to: str)-> None:
+        self.__doConection(to)
         self.__sql_gene.execute(msg)
         self.__conn.commit()
-        print("guarde en base de datos "+ msg)
         self.__closeConection()
     # Receive the SQL Query and execute get information from DB
-    def query(self, msg:str)->List:
-        self.__doConection()
+    def query(self, msg:str, to: str)->List:
+        self.__doConection(to)
         self.__sql_gene.execute(msg)
         out = self.__sql_gene.fetchall()
         self.__closeConection()
