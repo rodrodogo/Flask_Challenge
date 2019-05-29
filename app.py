@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from functions import *
 import sqlite3
 
@@ -40,13 +40,13 @@ def insert():
 	c = dbConector.getInstance()
 	try:
 		_name = request.form['firstname']
-		c.insert("INSERT INTO person VALUES  ({2} ,'{0}', {1})".format(_name,_age,_id), "user")
+		c.insert("INSERT INTO person VALUES  ({2} ,'{0}', {1})".format(_name,_age,_id))
 	except:
 		_name = request.form['firstnameM']
 		c.insert("UPDATE person SET name = '{0}', \
-				age = {1} WHERE identification = {2}".format(_name,_age,_id), "users")
+				age = {1} WHERE identification = {2}".format(_name,_age,_id))
 
-	return 'Hola {0}'.format(_name)
+	return app.send_static_file("success.html")
 
 @app.route('/vwPerson', methods = ['POST'])
 def vwPerson():
@@ -60,7 +60,7 @@ def vwPerson():
 			'''
 	_name = request.form['firstname']
 	c = dbConector.getInstance()
-	_result = c.query("SELECT * FROM person WHERE name = '{}'".format(_name), "users")
+	_result = c.query("SELECT * FROM person WHERE name = '{}'".format(_name))
 	for row in _result:
 		output += ''' <tr><th>{0}</th>
 					<th>{1}</th>
@@ -75,7 +75,7 @@ def vwPerson():
 def edtPerson():
 	_name = request.form['firstname']
 	c = dbConector.getInstance()
-	_result = c.query("SELECT * FROM person WHERE name = '{}'".format(_name), "users")
+	_result = c.query("SELECT * FROM person WHERE name = '{}'".format(_name))
 	output = '''
 				<form action="/insert", method="post">
 				  id:<br>
@@ -96,7 +96,7 @@ def edtPerson():
 def rmvPerson():
 	_id = request.form['id']
 	c = dbConector.getInstance()
-	c.insert("DELETE FROM person WHERE identification = {}".format(_id), "users")
+	c.insert("DELETE FROM person WHERE identification = {}".format(_id))
 	return "Eliminado"
 
 #------------------------------Groups-------------------------------------------
@@ -108,13 +108,13 @@ def insertGroup():
 	c = dbConector.getInstance()
 	try:
 		_name = request.form['name']
-		c.insert("INSERT INTO groups VALUES  ({1} ,'{0}')".format(_name,_id), "groups")
+		c.insert("INSERT INTO groups VALUES  ({1} ,'{0}')".format(_name,_id))
 	except:
 		_name = request.form['nameM']
 		c.insert("UPDATE groups SET name = '{0}'\
-				 WHERE id = {1}".format(_name,_id), "groups")
+				 WHERE id = {1}".format(_name,_id))
 
-	return 'Hola {0}'.format(_name)
+	return app.send_static_file("success.html")
 
 @app.route('/vwGroup', methods = ['POST'])
 def vwGroup():
@@ -127,7 +127,7 @@ def vwGroup():
 			'''
 	_name = request.form['name']
 	c = dbConector.getInstance()
-	_result = c.query("SELECT * FROM groups WHERE name = '{}'".format(_name), "groups")
+	_result = c.query("SELECT * FROM groups WHERE name = '{}'".format(_name))
 	for row in _result:
 		output += ''' <tr><th>{0}</th>
 					<th>{1}</th>
@@ -141,7 +141,7 @@ def vwGroup():
 def edtGroup():
 	_name = request.form['name']
 	c = dbConector.getInstance()
-	_result = c.query("SELECT * FROM groups WHERE name = '{}'".format(_name), "groups")
+	_result = c.query("SELECT * FROM groups WHERE name = '{}'".format(_name))
 	output = '''
 				<form action="/insertGroup", method="post">
 				  id:<br>
@@ -160,7 +160,26 @@ def edtGroup():
 def rmvGroup():
 	_id = request.form['id']
 	c = dbConector.getInstance()
-	c.insert("DELETE FROM groups WHERE id = {}".format(_id), "groups")
+	c.insert("DELETE FROM groups WHERE id = {}".format(_id))
 	return "Eliminado"
+
+#----------------------------End Points-----------------------------------------
+
+@app.route('/getPersonsById/<id>')
+def getPersons(id):
+	c = dbConector.getInstance()
+	_result = c.query("SELECT * FROM person WHERE identification = '{}'".format(id))
+	out = []
+	for row in _result:
+		out.append({'id': row['identification'],'name': row['name'],'age': row['age']})
+	return  jsonify(out)
+@app.route('/getGroupById/<id>')
+def getGroups(id):
+	c = dbConector.getInstance()
+	_result = c.query("SELECT * FROM groups WHERE id = '{}'".format(id))
+	out = []
+	for row in _result:
+		out.append({'id': row['id'],'name': row['name']})
+	return  jsonify(out)
 
 app.run(debug=True)
